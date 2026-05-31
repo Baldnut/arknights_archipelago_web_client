@@ -13,7 +13,6 @@ table {
 .loginTitle {
     background-image: url('./img/ocean-header-night.png');
     background-position: center bottom;
-    background-size: 400px auto;
     background-repeat: repeat-x;
     text-align: left;
     color: white;
@@ -22,12 +21,12 @@ table {
     left: -8px;
     position: relative;
     width: calc(100% - 45px);
-    height: 80px;
 }
 
 .textTitle {
     font-size: 45px;
     font-weight: bold;
+    margin-top: -5px;
 }
 
 .header {

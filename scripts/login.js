@@ -51,48 +51,111 @@ function completeText(host, port, player) {
     window.location.href = './textclient.html'
 }
 
+function isZipFileData(data) {
+    var bytes = new Uint8Array(data);
+
+    return bytes.length >= 4
+        && bytes[0] == 0x50
+        && bytes[1] == 0x4b
+        && (
+            (bytes[2] == 0x03 && bytes[3] == 0x04)
+            || (bytes[2] == 0x05 && bytes[3] == 0x06)
+            || (bytes[2] == 0x07 && bytes[3] == 0x08)
+        );
+}
+
+function findZipFile(zip, filename) {
+    var exactFile = zip.file(filename);
+    if (exactFile) {
+        return exactFile;
+    }
+
+    var matchingName = Object.keys(zip.files).find(function (name) {
+        return !zip.files[name].dir && name.endsWith("/" + filename);
+    });
+
+    return matchingName ? zip.file(matchingName) : null;
+}
+
+async function readJsonFromZip(zip, filename, required) {
+    var file = findZipFile(zip, filename);
+    if (!file) {
+        if (required) {
+            throw new Error("APMANUAL is missing " + filename);
+        }
+
+        return {};
+    }
+
+    return JSON.parse(await file.async("string"));
+}
+
+async function readApmanualFile(file) {
+    var data = await file.arrayBuffer();
+
+    if (isZipFileData(data)) {
+        try {
+            var zip = await JSZip.loadAsync(data);
+            var manifest = await readJsonFromZip(zip, "archipelago.json", true);
+
+            return {
+                game: manifest["game"],
+                player_name: manifest["player_name"],
+                items: await readJsonFromZip(zip, "items.json", true),
+                locations: await readJsonFromZip(zip, "locations.json", true),
+                regions: await readJsonFromZip(zip, "regions.json", true),
+                categories: await readJsonFromZip(zip, "categories.json", false),
+            };
+        } catch (e) {
+            console.log("Error reading APManual file:", e);
+        }
+    }
+
+    var encoded = new TextDecoder().decode(data).replace(/\s/g, "");
+    var decodedBytes = Uint8Array.from(atob(encoded), function (char) {
+        return char.charCodeAt(0);
+    });
+
+    return JSON.parse(new TextDecoder().decode(decodedBytes));
+}
+
+function loadApmanual(decoded) {
+    console.log(decoded);
+
+    //Set Game & Player Name
+    document.getElementById('game').value = decoded['game'];
+    document.getElementById('player').value = decoded['player_name'];
+
+    //Set DeathLink
+    var DLRadio = document.getElementsByName('deathlink');
+    var checked = Array.from(DLRadio).find((radio) => radio.checked);
+    if (checked.value == 'yes') {
+        sessionStorage.setItem('tags', JSON.stringify(['AP', 'ManualWeb', 'DeathLink', 'Web Client (WIP)', 'rampantepsilon.github.io/ManualAPClient']))
+    } else {
+        sessionStorage.setItem('tags', JSON.stringify(['AP', 'ManualWeb', 'Web Client (WIP)', 'rampantepsilon.github.io/ManualAPClient']));
+    }
+
+    //Get information JSONs
+    var locations = decoded['locations'];
+    var items = decoded['items'];
+    var categories = '';
+    //Commenting out due to bug
+    /*if (decoded['categories']) {
+        categories = decoded['categories'];
+    }*/
+    parseInfo(locations, items, categories);
+}
+
 //Allow grouping from APWorld
 $("#style").on("change", function (evt) {
-    if (document.getElementById('style').value.includes('.apmanual')) {
+    if (document.getElementById('style').value.toLowerCase().includes('.apmanual')) {
         const [file] = document.getElementById('style').files;
-        const reader = new FileReader()
-
-        reader.addEventListener(
-            "load",
-            () => {
-                //B64 Decryption
-                var decoded = JSON.parse(atob(reader.result));
-
-                console.log(decoded);
-
-                //Set Game & Player Name
-                document.getElementById('game').value = decoded['game'];
-                document.getElementById('player').value = decoded['player_name'];
-
-                //Set DeathLink
-                var DLRadio = document.getElementsByName('deathlink');
-                var checked = Array.from(DLRadio).find((radio) => radio.checked);
-                if (checked.value == 'yes') {
-                    sessionStorage.setItem('tags', JSON.stringify(['AP', 'ManualWeb', 'DeathLink', 'Web Client (WIP)', 'rampantepsilon.github.io/ManualAPClient']))
-                } else {
-                    sessionStorage.setItem('tags', JSON.stringify(['AP', 'ManualWeb', 'Web Client (WIP)', 'rampantepsilon.github.io/ManualAPClient']));
-                }
-
-                //Get information JSONs
-                var locations = decoded['locations'];
-                var items = decoded['items'];
-                var categories = '';
-                //Commenting out due to bug
-                /*if (decoded['categories']) {
-                    categories = decoded['categories'];
-                }*/
-                parseInfo(locations, items, categories);
-            },
-            false,
-        );
-
         if (file) {
-            reader.readAsText(file);
+            document.getElementById('err').innerHTML = "";
+            readApmanualFile(file).then(loadApmanual).catch(function (e) {
+                console.log("Error reading APManual file:", e);
+                document.getElementById('err').innerHTML = "Unable to read APMANUAL file. Please verify this is the .APMANUAL file for this game."
+            });
         }
     }
 })
