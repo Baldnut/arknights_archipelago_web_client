@@ -392,8 +392,21 @@ input[type=text]:disabled {
 
 /*Tooltip End*/
 
+:root {
+    --item-width: 150px;
+}
+
 .itemsContainer {
     display: grid;
-    grid-template-columns: repeat(3, max-content);
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, max(var(--item-width), 100%/10)), 1fr));
     justify-content: center;
+}
+
+.itemCard {
+    width: var(--item-width);
+    max-width: 100%;
+}
+
+.character-avatar {
+    width: 100%;
 }
