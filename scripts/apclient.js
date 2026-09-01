@@ -45,7 +45,7 @@ async function FindCharacterByName(character) {
 
     try {
         const data = await GetCharacterObjectNameJson();
-        const normalizedCharacter = character.trim();
+        const normalizedCharacter = character.trim().toLowerCase();
         if (!normalizedCharacter) {
             return null;
         }

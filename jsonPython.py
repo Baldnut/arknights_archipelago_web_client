@@ -16,9 +16,9 @@ for obj_id, entry in data.items():
         continue
 
     if entry.get("name"):
-        name_to_object_id.setdefault(entry["name"], obj_id)
+        name_to_object_id.setdefault(entry["name"].strip().lower(), obj_id)
 
-    name_to_object_id.setdefault(obj_id, obj_id)
+    #name_to_object_id.setdefault(obj_id, obj_id)
 
 # optional: save it to a file
 mapping_path = base / "name_to_object_id.json"
