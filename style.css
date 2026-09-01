@@ -274,6 +274,8 @@ div#locations {
 
 .items {
     cursor: pointer;
+    padding-left: 1rem;
+    padding-right: 1rem;
 }
 
 .locations {
@@ -392,5 +394,6 @@ input[type=text]:disabled {
 
 .itemsContainer {
     display: grid;
-    grid-template-columns: auto auto auto;
+    grid-template-columns: repeat(3, max-content);
+    justify-content: center;
 }

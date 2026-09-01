@@ -15,6 +15,54 @@ function disconnect() {
     window.location.href = './index.html'
 }
 
+const characterObjectNameCache = {
+    promise: null,
+};
+
+async function GetCharacterObjectNameJson() {
+    if (!characterObjectNameCache.promise) {
+        characterObjectNameCache.promise = fetch('name_to_object_id.json')
+            .then(async (response) => {
+                if (!response.ok) {
+                    throw new Error(`Failed to load name_to_object_id.json: ${response.status}`);
+                }
+                return await response.json();
+            })
+            .catch((error) => {
+                console.error('Error fetching character object name:', error);
+                characterObjectNameCache.promise = null;
+                throw error;
+            });
+    }
+
+    return characterObjectNameCache.promise;
+}
+
+async function FindCharacterByName(character) {
+    if (!character || typeof character !== 'string') {
+        return null;
+    }
+
+    try {
+        const data = await GetCharacterObjectNameJson();
+        const normalizedCharacter = character.trim();
+        if (!normalizedCharacter) {
+            return null;
+        }
+
+        return data[normalizedCharacter] || null;
+    } catch (error) {
+        return null;
+    }
+}
+
+async function GetCharavatarsURI(character) {
+    const result = await FindCharacterByName(character);
+    return `https://github.com/ArknightsAssets/ArknightsAssets2/blob/en/assets/dyn/arts/charavatars/${result}.png?raw=true` ?? 'No character found';
+}
+
+
+
 //Background
 if (sessionStorage.getItem('background')) {
     document.documentElement.style.backgroundImage = "url(" + sessionStorage.getItem('background') + ")";
@@ -52,6 +100,30 @@ for (i in locCat) {
 //Tracking for Async resync
 var checkedLocations = [];
 
+function escapeHtmlAttribute(value) {
+    return String(value)
+        .replace(/&/g, '&amp;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+}
+
+async function loadCharacterAvatars() {
+    const avatarNodes = document.querySelectorAll(".character-avatar");
+
+    for (const avatarNode of avatarNodes) {
+        const characterName = avatarNode.dataset.character;
+        if (!characterName) {
+            continue;
+        }
+
+        const avatarUrl = await GetCharavatarsURI(characterName);
+        if (avatarUrl) {
+            avatarNode.src = avatarUrl;
+            avatarNode.classList.remove('is-hidden');
+        }
+    }
+}
+
 //Layout Items
 var items = document.getElementById('items');
 items.innerHTML = '';
@@ -75,7 +147,7 @@ for (i in uniqueItemCat) {
                     styleCombine += styleSplit[l].replaceAll("[", '').replaceAll(']', '').replaceAll("'", "").replaceAll(" ", "").replaceAll("&", "").replaceAll("+", "plus");
                 }
 
-                temp += "<span class='itemCard 0" + itemIDs[j] + " " + styleCombine + " is-hidden'><div class='items itemsStyle' id='" + uniqueItemCat[i] + "' data-id='" + itemIDs[j] + "'>" + itemNames[j] + " (<span class='" + itemIDs[j] + "'>0</span>)</div></span>"
+                temp += "<span class='itemCard 0" + itemIDs[j] + " " + styleCombine + " is-hidden'><div class='items itemsStyle' id='" + uniqueItemCat[i] + "' data-id='" + itemIDs[j] + "'><img class='character-avatar is-hidden' data-character='" + escapeHtmlAttribute(itemNames[j]) + "' alt='" + escapeHtmlAttribute(itemNames[j]) + "' loading='lazy'><div class='items itemsStyle'>" + itemNames[j] + " (<span class='" + itemIDs[j] + "'>0</span>)</div></div></span>"
             } else if (itemCat[j] == null) {
                 styleSplit = uniqueItemCat[i].split(' ');
                 var styleCombine = '';
@@ -84,12 +156,14 @@ for (i in uniqueItemCat) {
                     styleCombine += styleSplit[l].replaceAll("[", '').replaceAll(']', '').replaceAll("'", "").replaceAll(" ", "").replaceAll("&", "").replaceAll("+", "plus");
                 }
 
-                temp += "<span class='itemCard 0" + itemIDs[j] + " " + styleCombine + " is-hidden'><div class='items itemsStyle' id='" + uniqueItemCat[i] + "' data-id='" + itemIDs[j] + "'>" + itemNames[j] + " (<span class='" + itemIDs[j] + "'>0</span>)</div></span>"
+                temp += "<span class='itemCard 0" + itemIDs[j] + " " + styleCombine + " is-hidden'><div class='items itemsStyle' id='" + uniqueItemCat[i] + "' data-id='" + itemIDs[j] + "'><img class='character-avatar is-hidden' data-character='" + escapeHtmlAttribute(itemNames[j]) + "' alt='" + escapeHtmlAttribute(itemNames[j]) + "' loading='lazy'><div class='items itemsStyle'>" + itemNames[j] + " (<span class='" + itemIDs[j] + "'>0</span>)</div></div></span>"
             }
         }
     }
     items.innerHTML += temp
 }
+
+loadCharacterAvatars();
 
 //Close & Open Item Cateorgies by clicking
 function itemCatClose(category) {
