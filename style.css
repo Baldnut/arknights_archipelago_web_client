@@ -390,7 +390,7 @@ input[type=text]:disabled {
 
 /*Tooltip End*/
 
-.itemContainer {
+.itemsContainer {
     display: grid;
     grid-template-columns: auto auto auto;
 }
