@@ -389,3 +389,8 @@ input[type=text]:disabled {
 }
 
 /*Tooltip End*/
+
+.itemContainer {
+    display: grid;
+    grid-template-columns: auto auto auto;
+}

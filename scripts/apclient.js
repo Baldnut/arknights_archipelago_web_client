@@ -64,6 +64,7 @@ for (i in uniqueItemCat) {
         items.innerHTML += "<br><div align='center' class='items' id='" + uniqueItemCat[i] + `' style='font-weight: bold;' onclick='itemCatClose("` + i + `")'>` + uniqueItemCat[i] + " (<span id='" + uniqueItemCat[i] + "2'>0</span>)</div><br>";
     }
     //Add Items
+    temp = "<div class='itemsContainer'>"
     for (j in itemNames) {
         for (k in itemCat[j]) {
             if (itemCat[j][k] == uniqueItemCat[i]) {
@@ -74,7 +75,7 @@ for (i in uniqueItemCat) {
                     styleCombine += styleSplit[l].replaceAll("[", '').replaceAll(']', '').replaceAll("'", "").replaceAll(" ", "").replaceAll("&", "").replaceAll("+", "plus");
                 }
 
-                items.innerHTML += "<span class='itemCard 0" + itemIDs[j] + " " + styleCombine + " is-hidden'><div class='items itemsStyle' id='" + uniqueItemCat[i] + "' data-id='" + itemIDs[j] + "'>" + itemNames[j] + " (<span class='" + itemIDs[j] + "'>0</span>)</div></span>"
+                temp += "<span class='itemCard 0" + itemIDs[j] + " " + styleCombine + " is-hidden'><div class='items itemsStyle' id='" + uniqueItemCat[i] + "' data-id='" + itemIDs[j] + "'>" + itemNames[j] + " (<span class='" + itemIDs[j] + "'>0</span>)</div></span>"
             } else if (itemCat[j] == null) {
                 styleSplit = uniqueItemCat[i].split(' ');
                 var styleCombine = '';
@@ -83,10 +84,11 @@ for (i in uniqueItemCat) {
                     styleCombine += styleSplit[l].replaceAll("[", '').replaceAll(']', '').replaceAll("'", "").replaceAll(" ", "").replaceAll("&", "").replaceAll("+", "plus");
                 }
 
-                items.innerHTML += "<span class='itemCard 0" + itemIDs[j] + " " + styleCombine + " is-hidden'><div class='items itemsStyle' id='" + uniqueItemCat[i] + "' data-id='" + itemIDs[j] + "'>" + itemNames[j] + " (<span class='" + itemIDs[j] + "'>0</span>)</div></span>"
+                temp += "<span class='itemCard 0" + itemIDs[j] + " " + styleCombine + " is-hidden'><div class='items itemsStyle' id='" + uniqueItemCat[i] + "' data-id='" + itemIDs[j] + "'>" + itemNames[j] + " (<span class='" + itemIDs[j] + "'>0</span>)</div></span>"
             }
         }
     }
+    items.innerHTML += temp
 }
 
 //Close & Open Item Cateorgies by clicking
