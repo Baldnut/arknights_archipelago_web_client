@@ -296,8 +296,7 @@ div#locations {
     background-color: rgb(0, 173, 145);
     color: black;
     border: 1px solid white;
-    padding-top: 3px;
-    padding-bottom: 3px;
+    padding: 3px;
     text-align: center;
     cursor: pointer;
 }
