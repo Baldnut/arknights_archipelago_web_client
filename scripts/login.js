@@ -140,9 +140,9 @@ function loadApmanual(decoded) {
     var items = decoded['items'];
     var categories = '';
     //Commenting out due to bug
-    /*if (decoded['categories']) {
+    if (decoded['categories']) {
         categories = decoded['categories'];
-    }*/
+    }
     parseInfo(locations, items, categories);
 }
 
@@ -177,7 +177,7 @@ function parseInfo(locations, items, categories) {
         var locCatTemp = [];
         for (j in locMain[i]["category"]) {
             if (!categories == '') {
-                if (!categories[locMain[i]['category'][j]]) {
+                if (!categories[locMain[i]['category'][j]] || !categories[locMain[i]['category'][j]]["hidden"]) {
                     locCatTemp.push(locMain[i]["category"][j]);
                 }
             } else {
@@ -228,8 +228,10 @@ function parseInfo(locations, items, categories) {
             itemCatTemp.push(itemMain[i]["category"][j])
         }
         for (k in itemCatTemp) {
-            if (!uniqueItemCat.includes(itemCatTemp[k])) {
-                uniqueItemCat.push(itemCatTemp[k]);
+            if (!categories[itemCatTemp[k]] || !categories[itemCatTemp[k]]["hidden"]) {
+                if (!uniqueItemCat.includes(itemCatTemp[k])) {
+                    uniqueItemCat.push(itemCatTemp[k]);
+                }
             }
         }
     }
