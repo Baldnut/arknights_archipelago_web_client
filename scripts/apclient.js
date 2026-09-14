@@ -38,31 +38,6 @@ async function GetCharacterObjectNameJson() {
     return characterObjectNameCache.promise;
 }
 
-async function FindCharacterByName(character) {
-    if (!character || typeof character !== 'string') {
-        return null;
-    }
-
-    try {
-        const data = await GetCharacterObjectNameJson();
-        const normalizedCharacter = character.trim().toLowerCase();
-        if (!normalizedCharacter) {
-            return null;
-        }
-
-        return data[normalizedCharacter] || null;
-    } catch (error) {
-        return null;
-    }
-}
-
-async function GetCharavatarsURI(character) {
-    const result = await FindCharacterByName(character);
-    return `https://github.com/ArknightsAssets/ArknightsAssets2/blob/en/assets/dyn/arts/charavatars/${result}.png?raw=true` ?? 'No character found';
-}
-
-
-
 //Background
 if (sessionStorage.getItem('background')) {
     document.documentElement.style.backgroundImage = "url(" + sessionStorage.getItem('background') + ")";
@@ -116,7 +91,7 @@ async function loadCharacterAvatars() {
             continue;
         }
 
-        const avatarUrl = await GetCharavatarsURI(characterName);
+        const avatarUrl = `img/avatars/${characterName.trim().toLowerCase()}.png`;
         if (avatarUrl) {
             avatarNode.src = avatarUrl;
             avatarNode.classList.remove('is-hidden');
